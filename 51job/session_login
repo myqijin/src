@@ -1,0 +1,12 @@
+import requests
+
+session = requests.Session()
+
+params = {'username': 'username', 'password': 'password'}
+r = session.post("http://pythonscraping.com/pages/cookies/welcome.php", params)
+print("cookies is set to:")
+print(r.cookies.get_dict())
+print("----------")
+print("go to profile page...")
+r = session.get("http://pythonscraping.com/pages/cookies/profile.php")
+print(r.text)
