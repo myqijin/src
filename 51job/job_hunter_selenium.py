@@ -3,12 +3,14 @@
 
 from selenium import webdriver
 import time
+import json
 
 
 class Login():
     driver = None
 
     def __init__(self, url):
+
         self.driver = webdriver.PhantomJS(
             executable_path=r"D:\Software\phantomjs-2.1.1-windows\bin\phantomjs")
         self.driver.get(url)
@@ -21,11 +23,22 @@ class Login():
         self.pw = self.driver.find_element_by_id("password")
         self.pw.clear()
         self.pw.send_keys(password)
+        if self.driver.find_element_by_id("verifypic").is_displayed():
+            self.driver.get_screenshot_as_file("verifycode.png")
+            verifycode = input("Please enter verification code:")
+            code = self.driver.find_element_by_id("verifycode")
+            code.clear()
+            code.send_keys(verifycode)
         self.driver.find_element_by_id("login_btn").submit()
         self.driver.implicitly_wait(10)
+        aftercookies = self.driver.get_cookies()
+        print("after login:" + str(aftercookies))
+        jsonCookies = json.dumps(aftercookies)
+        with open("51job.json", 'w') as f:
+            f.write(jsonCookies)
 
     def run(self):
-        self.driver.get_screenshot_as_file("2.png")
+        self.driver.get_screenshot_as_file("login successfully.png")
         self.driver.close()
 
 
