@@ -75,9 +75,13 @@ def get_page_num(html):
     # 创建bs4实例
     page_obj = build_bsobj(html)
     # 找到标签
-    page_num = page_obj.find("span", class_="td").get_text()
-    page_num = int(re.sub("\D", "", page_num))
-    return page_num
+    try:
+        page_num = page_obj.find("span", class_="td").get_text()
+        page_num = int(re.sub("\D", "", page_num))
+        return page_num
+    except:
+        print("No element found!")
+        return -1
 
 
 def get_salary_range(salary):
@@ -116,7 +120,7 @@ def get_salary_range(salary):
 def build_bsobj(html):
     """通过html获取bs4对象"""
     try:
-        bsobj = BeautifulSoup(html, "lxml")
+        bsobj = BeautifulSoup(html, "xml")
     except AttributeError as e:
         return None
     return bsobj
@@ -190,7 +194,7 @@ def get_data(html, total_info):
             }
             total_info.append(job_des_i)
             print(job_des_i.values())
-            sleep_time = random.choice(range(3, 10))
+            sleep_time = random.choice(range(2, 7))
             print("On hold: %d s..." % sleep_time)
             time.sleep(sleep_time)
         else:
@@ -260,7 +264,7 @@ if __name__ == '__main__':
     """主函数"""
 
     # 关键词
-    keyword = urllib.parse.urlencode({"keyword": "机械工程师"})
+    keyword = urllib.parse.urlencode({"keyword": "数据分析师"})
     # 地区
     area = "020000"
     # 获取最大页数
@@ -285,14 +289,15 @@ if __name__ == '__main__':
         # 写入数据
         contents = []
         try:
+            contents.append(total_info[0].keys())
             for i in range(0, len(total_info)):
                 temp = []
                 for content in total_info[i].values():
                     temp.append(content)
                 contents.append(temp)
         #         w2xls("51job.xls", contents)
-            w2csv("51job_test.csv", contents)
+            w2csv("DA_20180307.csv", contents)
         except:
-            print("Mission Failed")
+            print("Save Failed")
 
     print("Mission Complete")
