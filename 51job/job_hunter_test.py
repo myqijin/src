@@ -60,7 +60,7 @@ def get_content(url, data=None):
             print('URLError: NoSiteExcit', e.reason)
         try:
             c = chardet.detect(html)
-            html = html.decode(c["encoding"], 'ignore').encode('utf-8')
+            html = html.decode(c["encoding"], 'ignore')
         except UnicodeError as e:
             print(e)
             html = None
@@ -252,19 +252,24 @@ def w2xls(file_name, datas):
         print("Denied to save!")
 
 
-def w2csv(file_name, datas):
+def ws2csv(file_name, datas, mode):
     """将数据写入csv文件"""
-    with open(file_name, 'a', newline='', encoding='utf-8_sig') as csv_f:
+    with open(file_name, mode, newline='', encoding='utf-8_sig') as csv_f:
         writer = csv.writer(csv_f)
         for data in datas:
             writer.writerow(data)
+def w2csv(file_name, data, mode):
+    """将数据写入csv文件"""
+    with open(file_name, mode, newline='', encoding='utf-8_sig') as csv_f:
+        writer = csv.writer(csv_f)
+        writer.writerow(data)
 
 
 if __name__ == '__main__':
     """主函数"""
 
     # 关键词
-    keyword = urllib.parse.urlencode({"keyword": "数据分析师"})
+    keyword = urllib.parse.urlencode({"keyword": "机械工程师"})
     # 地区
     area = "020000"
     # 获取最大页数
@@ -296,7 +301,7 @@ if __name__ == '__main__':
                     temp.append(content)
                 contents.append(temp)
         #         w2xls("51job.xls", contents)
-            w2csv("DA_20180307.csv", contents)
+            ws2csv("ME_20180417.csv", contents, 'a')
         except:
             print("Save Failed")
 
