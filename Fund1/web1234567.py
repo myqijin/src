@@ -3,6 +3,7 @@
 import random
 import re
 import time
+from datetime import date, datetime
 from urllib import request, error
 
 import chardet
@@ -16,6 +17,7 @@ class Fund():
         pass
 
     def get_random_header(self):
+        """request header"""
         list = [
             "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
             "Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
@@ -43,6 +45,7 @@ class Fund():
 
     def get_content(self, url):
         """获取网页中的html代码"""
+
         header = self.get_random_header()
 
         # 随机超时时间
@@ -80,7 +83,7 @@ class Fund():
         return bsobj
 
     def get_data(self, url):
-        """获得职位具体内容"""
+        """obtain fund info"""
 
         sleep_time = random.choice(range(2, 7))
         print("\nOn hold: %d s..." % sleep_time)
@@ -94,6 +97,10 @@ class Fund():
         try:
             info = bsobj.find("div", class_='bs_gl')
             tds = info.find_all("label")
+
+            # get name
+            name = bsobj.find("h4", class_="title").a.get_text()
+
             # search scale tag
             scale = tds[4].span.get_text()
 
@@ -102,7 +109,7 @@ class Fund():
 
             # search purchase fee
             purchase_fee = bsobj.find("b", class_="sourcerate").next_sibling.next_element.get_text()
-            print(purchase_fee)
+
             # find operating fee
             tds = bsobj.find_all("div", class_="box")[3].find_all("td", class_="w135")
             management_fee = tds[0].get_text()
@@ -115,21 +122,32 @@ class Fund():
 
         else:
             # extract
+            name = re.search(r"(\S*)\s", name).group(0)
             scale = re.search(r"\d{1,2}\.\d{1,2}", scale).group()
+            purchase_fee = float(re.search(r"\d{1,2}\.\d{1,2}", purchase_fee).group()) / 100.0
+            founded = datetime.strptime(founded, '%Y-%m-%d').strftime('%Y%m%d')
+
             # founded = re.search(r"\d{4}(\-|\/|.)\d{1,2}\1\d{1,2}", founded).group()
-            management_fee = re.search(r"\d{1,2}\.\d{1,2}", management_fee).group()
-            trustee_fee = re.search(r"\d{1,2}\.\d{1,2}", trustee_fee).group()
+            management_fee = float(re.search(r"\d{1,2}\.\d{1,2}", management_fee).group()) / 100
+            trustee_fee = float(re.search(r"\d{1,2}\.\d{1,2}", trustee_fee).group()) / 100
+
+            # judge sales_charge == 0 ?
             if re.search(r"\d{1,2}\.\d{1,2}", sales_charge):
-                sales_charge = re.search(r"\d{1,2}\.\d{1,2}", sales_charge).group()
+                sales_charge = float(re.search(r"\d{1,2}\.\d{1,2}", sales_charge).group()) / 100
             else:
                 sales_charge = 0
-            print(scale, founded, purchase_fee, management_fee, trustee_fee, sales_charge)
-            return scale, founded, purchase_fee, management_fee, trustee_fee, sales_charge
+            updated = date.today().strftime('%Y%m%d')
+            print(name, scale, founded, updated, purchase_fee, management_fee, trustee_fee, sales_charge)
+            return name, scale, founded, updated, str(purchase_fee), str(management_fee), str(trustee_fee), str(
+                sales_charge)
 
     def readxls(self, file):
-        workbook = xlrd.open_workbook(file)
-        sheet = workbook.sheet_by_name('Sheet1')
-        data = sheet.col_values(0)
+        """read column from excel"""
+        try:
+            workbook = xlrd.open_workbook(file)
+            sheet = workbook.sheet_by_name('Sheet1')
+        except FileNotFoundError as e:
+            print(e)
+        else:
+            data = sheet.col_values(0)
         return data
-
-
